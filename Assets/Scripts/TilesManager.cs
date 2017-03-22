@@ -29,13 +29,14 @@ public class TilesManager : MonoBehaviour {
     [SerializeField]
     private GameObject wallTile;
     [SerializeField]
-    private List<Vector3> portalPositions = new List<Vector3> ();
+    public List<Vector3> portalPositions = new List<Vector3> ();
     [SerializeField]
     private List<Vector3> basePositions = new List<Vector3> ();
+
     [SerializeField]
     private string holderName = "Board";
-
     private Transform tilesHolder;
+
     private List<Vector3> innerGridPositions = new List<Vector3> ();
     private List<Vector3> outerGridPositions = new List<Vector3> ();
 
@@ -96,4 +97,7 @@ public class TilesManager : MonoBehaviour {
         }
     }
 
+    public List<Vector3> GetPortalPositions () {
+        return portalPositions;
+    }
 }
