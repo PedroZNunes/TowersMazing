@@ -32,7 +32,8 @@ public class TilesManager : MonoBehaviour {
     private List<Vector3> portalPositions = new List<Vector3> ();
     [SerializeField]
     private List<Vector3> basePositions = new List<Vector3> ();
-
+    [SerializeField]
+    private string holderName = "Board";
 
     private Transform tilesHolder;
     private List<Vector3> innerGridPositions = new List<Vector3> ();
@@ -60,7 +61,7 @@ public class TilesManager : MonoBehaviour {
     }
 
     private void MapSetup () {
-        tilesHolder = new GameObject ("Board").transform;
+        tilesHolder = new GameObject (holderName).transform;
         FillGrid ();
         FillOuterWall ();
     }
@@ -94,6 +95,5 @@ public class TilesManager : MonoBehaviour {
             GameObject instance = Instantiate (toInstantiate, outerGridPositions[gridIndex], Quaternion.identity, tilesHolder) as GameObject;
         }
     }
-
 
 }
