@@ -19,8 +19,10 @@ public class AI : MonoBehaviour {
         basePositions = tilesManager.GetBasePositions ();
     }
 
-    void Start () {
-        FindPath (new Vector3 (34f, 11f, 0f));
+
+    public List<Vector3> CalculatePath (Vector3 startingPosition) {
+        FindPath (startingPosition);
+        return CreatePath (startingPosition);
     }
 
     public void FindPath (Vector3 startingPosition) {
@@ -48,10 +50,10 @@ public class AI : MonoBehaviour {
                 }
             }
         }
-        CreatePath (startingPosition);
+
     }
 
-    public void CreatePath (Vector3 startingPosition) {
+    public List<Vector3> CreatePath (Vector3 startingPosition) {
         Vector3 currentPosition = goalPosition;
         List<Vector3> path = new List<Vector3> ();
         path.Add (currentPosition);
@@ -61,9 +63,7 @@ public class AI : MonoBehaviour {
         }
         path.Reverse ();
 
-        for (int x = 0 ; x < path.Count ; x++) {
-            print (path[x]);
-        }
+        return path;
     }
 
 
