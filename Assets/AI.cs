@@ -7,13 +7,14 @@ public class AI : MonoBehaviour {
 	[SerializeField]
     private TilesManager tilesManager;
 
-    private Dictionary<Vector3, Vector3> cameFrom = new Dictionary<Vector3, Vector3> ();
+    private Dictionary<Vector3, Vector3>[] cameFrom;
     private Queue<Vector3> frontier = new Queue<Vector3> ();
     private List<Vector3> basePositions = new List<Vector3> ();
     private Vector3 goalPosition = new Vector3();
 
     void Awake () {
         basePositions = tilesManager.GetBasePositions ();
+        cameFrom = new Dictionary<Vector3, Vector3>[basePositions.Count];
     }
 
     void Start () {
@@ -21,52 +22,74 @@ public class AI : MonoBehaviour {
     }
 
 
-    public Queue<Vector3> CalculatePath (Vector3 startingPosition) {
-        FindPath (startingPosition);
-        return CreatePath (startingPosition);
+    public Queue<Vector3> CalculatePath (Vector3 creepPosition) {
+        FindPaths (); 
+        Queue<Vector3>[] paths = CreatePaths (creepPosition);
+        return ChoosePath (paths);
     }
 
-    public void FindPath (Vector3 startingPosition) {
-        frontier.Clear ();
-        cameFrom.Clear ();
-
-        frontier.Enqueue (startingPosition);
-        cameFrom[startingPosition] = startingPosition; //this might cause issues
-
-        Vector3 currentPosition = new Vector3 ();
-        while (frontier.Count > 0) {
-            currentPosition = frontier.Dequeue ();
-            if (currentPosition == new Vector3 (1f, 10f, 0f))
-                Debug.Break ();
-            if (basePositions.Contains (currentPosition)) {
-                goalPosition = currentPosition;
-                break;
+    public void FindPaths () {
+        if (cameFrom.Length >= 0) {
+            for (int i = 0 ; i < cameFrom.Length ; i++) {
+                cameFrom[i] = new Dictionary<Vector3 , Vector3> ();
             }
+        }
 
-            List<Tile> neighbours = tilesManager.Neighbours (currentPosition);
-            foreach (Tile tile in neighbours) {
-                if (!cameFrom.ContainsKey (tile.GetPosition()) && tile.IsPassable ()) {
-                    frontier.Enqueue (tile.GetPosition ());
-                    cameFrom[tile.GetPosition()] = currentPosition;
+        for (int baseIndex = 0 ; baseIndex < basePositions.Count ; baseIndex++) {
+            frontier.Clear ();
+
+            frontier.Enqueue (basePositions[baseIndex]);
+            cameFrom[baseIndex][basePositions[baseIndex]] = basePositions[baseIndex];
+
+            Vector3 currentPosition = new Vector3 ();
+            while (frontier.Count > 0) {
+                currentPosition = frontier.Dequeue ();
+                List<Tile> neighbours = tilesManager.Neighbours (currentPosition);
+                foreach (Tile tile in neighbours) {
+                    if (!cameFrom[baseIndex].ContainsKey (tile.GetPosition ()) && tile.IsPassable ()) {
+                        frontier.Enqueue (tile.GetPosition ());
+                        cameFrom[baseIndex][tile.GetPosition ()] = currentPosition;
+                    }
                 }
             }
         }
 
     }
 
-    public Queue<Vector3> CreatePath (Vector3 startingPosition) {
-        Vector3 currentPosition = goalPosition;
-        Queue<Vector3> path = new Queue<Vector3> ();
-        path.Enqueue (currentPosition);
-        while (currentPosition != startingPosition) {
-            currentPosition = cameFrom[currentPosition];
-            path.Enqueue (currentPosition);
+    public Queue<Vector3> ChoosePath (Queue<Vector3>[] paths) {
+        Queue<Vector3> shortestPath = new Queue<Vector3> ();
+        for (int i = 0 ; i < paths.Length ; i++) {
+            if (shortestPath.Count == 0) {
+                shortestPath = paths[i];
+            }
+            if (shortestPath.Count > paths[i].Count) {
+                Debug.LogFormat ("Chose path[{0}] with Count:{1} instead of previous one with Count:{2}", i, paths[i].Count, shortestPath.Count);
+                shortestPath = paths[i];
+            }
+        }
+        Debug.LogFormat ("ShortestPath: ");
+        while (shortestPath.Count > 0) {
+            Debug.LogFormat ("{0}" , shortestPath.Dequeue());
         }
 
-        while (path.Count > 0) {
-            print (path.Dequeue ());
+        return shortestPath;
+    }
+
+    public Queue<Vector3>[] CreatePaths (Vector3 creepPosition) {
+        Queue<Vector3>[] paths = new Queue<Vector3>[cameFrom.Length];
+        for (int i = 0 ; i < paths.Length ; i++) {
+            paths[i] = new Queue<Vector3> ();
         }
-        return path;
+        Vector3 currentPosition = new Vector3 ();
+        for (int i = 0 ; i < cameFrom.Length ; i++) {
+            currentPosition = creepPosition;
+            paths[i].Enqueue (currentPosition);
+            while (!basePositions.Contains (currentPosition)) {
+                currentPosition = cameFrom[i][currentPosition];
+                paths[i].Enqueue (currentPosition);
+            }
+        }
+        return paths;
     }
 
 
