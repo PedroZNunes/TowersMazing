@@ -82,7 +82,12 @@
     <Compile Include="Assets\Movement.cs" />
     <Compile Include="Assets\Scripts\Command.cs" />
     <Compile Include="Assets\Scripts\CreepSpawner.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\BaseTile.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\FloorTile.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\PortalTile.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\WallTile.cs" />
     <Compile Include="Assets\Scripts\TilesManager.cs" />
+    <Compile Include="Assets\Tile.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

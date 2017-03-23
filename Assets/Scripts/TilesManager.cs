@@ -29,7 +29,8 @@ public class TilesManager : MonoBehaviour {
     [SerializeField]
     private GameObject wallTile;
     [SerializeField]
-    public List<Vector3> portalPositions = new List<Vector3> ();
+
+    private List<Vector3> portalPositions = new List<Vector3> ();
     [SerializeField]
     private List<Vector3> basePositions = new List<Vector3> ();
 
@@ -39,7 +40,7 @@ public class TilesManager : MonoBehaviour {
 
     private List<Vector3> innerGridPositions = new List<Vector3> ();
     private List<Vector3> outerGridPositions = new List<Vector3> ();
-
+    private Dictionary<Vector3, Tile> innerGrid = new Dictionary<Vector3, Tile> ();
 
     private void Start () {
         InitizalizeGrid ();
@@ -69,12 +70,20 @@ public class TilesManager : MonoBehaviour {
 
     private void FillGrid () {
         for (int gridIndex = 0 ; gridIndex < innerGridPositions.Count ; gridIndex++) { //loop through the grid
+
             GameObject toInstantiate = floorTile;
             if (toInstantiate == null) {
                 Debug.LogError ("FillGrid function has nothing to instantiate.");
-                continue;
+                continue; 
             }
+            
             GameObject instance = Instantiate (toInstantiate, innerGridPositions[gridIndex], Quaternion.identity, tilesHolder) as GameObject;
+            Tile tileToDictionary = instance.GetComponent<Tile> ();
+            if (tileToDictionary == null) {
+                Debug.LogError ("Tile Component not found.");
+            }
+
+            innerGrid.Add (innerGridPositions[gridIndex], tileToDictionary);
         }
     }
 
@@ -99,5 +108,22 @@ public class TilesManager : MonoBehaviour {
 
     public List<Vector3> GetPortalPositions () {
         return portalPositions;
+    }
+
+    public List<Vector3> GetBasePositions () {
+        return basePositions;
+    }
+
+    public List<Tile> Neighbours (Vector3 mainNode) {
+        List<Tile> neighbours = new List<Tile> ();
+        if (innerGrid.ContainsKey(new Vector3 (mainNode.x, mainNode.y + 1, 0f)))
+            neighbours.Add (innerGrid[new Vector3 (mainNode.x, mainNode.y + 1, 0f)]);
+        if (innerGrid.ContainsKey(new Vector3 (mainNode.x + 1, mainNode.y, 0f)))
+            neighbours.Add (innerGrid[new Vector3 (mainNode.x + 1, mainNode.y, 0f)]);
+        if (innerGrid.ContainsKey (new Vector3 (mainNode.x, mainNode.y - 1, 0f)))
+            neighbours.Add (innerGrid[new Vector3 (mainNode.x, mainNode.y - 1, 0f)]);
+        if (innerGrid.ContainsKey (new Vector3 (mainNode.x - 1, mainNode.y, 0f)))
+            neighbours.Add (innerGrid[new Vector3 (mainNode.x - 1, mainNode.y, 0f)]);
+        return neighbours;
     }
 }
