@@ -7,11 +7,8 @@ public class AI : MonoBehaviour {
 	[SerializeField]
     private TilesManager tilesManager;
 
-    Dictionary<Vector3, Vector3> cameFrom = new Dictionary<Vector3, Vector3> ();
-//    List<Vector3> gridPositions = new List<Vector3> ();
-
-    Queue<Vector3> frontier = new Queue<Vector3> ();
-
+    private Dictionary<Vector3, Vector3> cameFrom = new Dictionary<Vector3, Vector3> ();
+    private Queue<Vector3> frontier = new Queue<Vector3> ();
     private List<Vector3> basePositions = new List<Vector3> ();
     private Vector3 goalPosition = new Vector3();
 
@@ -19,8 +16,12 @@ public class AI : MonoBehaviour {
         basePositions = tilesManager.GetBasePositions ();
     }
 
+    void Start () {
+        Queue<Vector3> a =  CalculatePath (new Vector3 (32f, 11f, 0f));
+    }
 
-    public List<Vector3> CalculatePath (Vector3 startingPosition) {
+
+    public Queue<Vector3> CalculatePath (Vector3 startingPosition) {
         FindPath (startingPosition);
         return CreatePath (startingPosition);
     }
@@ -53,16 +54,18 @@ public class AI : MonoBehaviour {
 
     }
 
-    public List<Vector3> CreatePath (Vector3 startingPosition) {
+    public Queue<Vector3> CreatePath (Vector3 startingPosition) {
         Vector3 currentPosition = goalPosition;
-        List<Vector3> path = new List<Vector3> ();
-        path.Add (currentPosition);
+        Queue<Vector3> path = new Queue<Vector3> ();
+        path.Enqueue (currentPosition);
         while (currentPosition != startingPosition) {
             currentPosition = cameFrom[currentPosition];
-            path.Add (currentPosition);
+            path.Enqueue (currentPosition);
         }
-        path.Reverse ();
 
+        while (path.Count > 0) {
+            print (path.Dequeue ());
+        }
         return path;
     }
 
