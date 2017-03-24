@@ -6,8 +6,8 @@ using Random = UnityEngine.Random;
 
 public class TilesManager : MonoBehaviour {
 
-    const int ROWS = 19;
-    const int COLUMNS = 34;
+    private const int ROWS = 19;
+    private const int COLUMNS = 34;
 
     [Serializable]
     public class Count {
@@ -20,6 +20,7 @@ public class TilesManager : MonoBehaviour {
         }
     }
 
+
     [SerializeField]
     private GameObject portalTile;
     [SerializeField]
@@ -28,72 +29,131 @@ public class TilesManager : MonoBehaviour {
     private GameObject floorTile;
     [SerializeField]
     private GameObject wallTile;
+
+    [SerializeField]
+    private PathFinder pathFinder;
+    [SerializeField]
+    private Count wallCount = new Count (10 , 20);
+
     [SerializeField]
     private List<Vector3> portalPositions = new List<Vector3> ();
     [SerializeField]
     private List<Vector3> basePositions = new List<Vector3> ();
+
+
     [SerializeField]
     private string holderName = "Board";
 
-    private Transform tilesHolder;
-    private List<Vector3> innerGridPositions = new List<Vector3> ();
-    private List<Vector3> outerGridPositions = new List<Vector3> ();
 
+    private Transform tilesHolder;
+    private List<Vector3> gridPositions = new List<Vector3> ();
+    private Dictionary<Vector3, Tile> grid = new Dictionary<Vector3, Tile> ();
 
     private void Start () {
         InitizalizeGrid ();
         MapSetup ();
     }
 
+
     private void InitizalizeGrid () {
-        innerGridPositions.Clear ();
-        outerGridPositions.Clear ();
-        //gridPosition gets only the cells that are not at the edge of the screen
+        gridPositions.Clear ();
         for (int x = 0 ; x <= COLUMNS ; x++) {
             for (int y = 0 ; y <= ROWS ; y++) {
-                if (x == 0 || x == COLUMNS || y == 0 || y == ROWS) {
-                    outerGridPositions.Add (new Vector3 (x, y, 0f));
-                    continue;
-                }
-                innerGridPositions.Add (new Vector3 (x, y, 0f));
+                gridPositions.Add (new Vector3 (x, y, 0f));
             }
         }
     }
+
 
     private void MapSetup () {
         tilesHolder = new GameObject (holderName).transform;
         FillGrid ();
-        FillOuterWall ();
     }
+
 
     private void FillGrid () {
-        for (int gridIndex = 0 ; gridIndex < innerGridPositions.Count ; gridIndex++) { //loop through the grid
-            GameObject toInstantiate = floorTile;
-            if (toInstantiate == null) {
+
+        for (int gridIndex = 0 ; gridIndex < gridPositions.Count ; gridIndex++) { //loop through the grid
+            GameObject tileToInstantiate = floorTile;
+
+            if (gridPositions[gridIndex].x == 0 || gridPositions[gridIndex].x == COLUMNS || gridPositions[gridIndex].y == 0 || gridPositions[gridIndex].y == ROWS) {
+
+                if (portalPositions.Contains (gridPositions[gridIndex])) {
+                    tileToInstantiate = portalTile;
+                }
+                else if (basePositions.Contains (gridPositions[gridIndex])) {
+                    tileToInstantiate = baseTile;
+                }
+                else {
+                    tileToInstantiate = wallTile;
+                }
+
+            }
+
+            if (tileToInstantiate == null) {
                 Debug.LogError ("FillGrid function has nothing to instantiate.");
-                continue;
+                continue; 
             }
-            GameObject instance = Instantiate (toInstantiate, innerGridPositions[gridIndex], Quaternion.identity, tilesHolder) as GameObject;
+
+            grid.Add (gridPositions[gridIndex], tileToGrid);
+
+        }
+
+    }
+
+    private void RandomTilePlacement (GameObject tilePrefab, int minCount, int maxCount) {
+        int randomNumber = Random.Range (minCount, maxCount);
+        List<Vector3> usedPositions = new List<Vector3> ();
+        Vector3 tilePos = new Vector3 ();
+
+        for (int i = 0 ; i < randomNumber ; i++) {
+            tilePos.Set (0 , 0 , 0);
+            tilePos.x = Random.Range (1 , COLUMNS);
+            tilePos.y = Random.Range (1 , ROWS);
+
+            if (!usedPositions.Contains (tilePos)) {
+                Tile previousTile = grid[tilePos];
+                grid[tilePos] = tilePrefab.GetComponent<Tile>();
+                pathFinder.FindPaths ();
+
+                try {
+                    for (int j = 0 ; j < portalPositions.Count ; j++) {
+                        pathFinder.CreatePaths (portalPositions[j]);
+                    }
+                }
+                catch {
+                    Debug.LogFormat ("Wall blocked path. wall removed at {0}" , tilePos);
+                    grid[tilePos] = previousTile;
+                    i--;
+                    continue;
+                }
+
+                Destroy (previousTile.instance); //only if it succeeds
+                Instantiate (tilePrefab , tilePos , Quaternion.identity , tilesHolder);
+                usedPositions.Add (tilePos);
+            }
         }
     }
 
-    private void FillOuterWall () {
-        for (int gridIndex = 0 ; gridIndex < outerGridPositions.Count ; gridIndex++) { //loop through the outerWallgrid
-            GameObject toInstantiate = wallTile;
-            for (int portalIndex = 0 ; portalIndex < portalPositions.Count ; portalIndex++) { //spawn portals
-                if (outerGridPositions[gridIndex] == portalPositions[portalIndex]) {
-                    toInstantiate = portalTile;
-                    break;
-                }
-            }
-            for (int baseIndex = 0 ; baseIndex < basePositions.Count ; baseIndex++) { //spawn base
-                if (outerGridPositions[gridIndex] == basePositions[baseIndex]) {
-                    toInstantiate = baseTile;
-                    break;
-                }
-            }
-            GameObject instance = Instantiate (toInstantiate, outerGridPositions[gridIndex], Quaternion.identity, tilesHolder) as GameObject;
-        }
+
+    public List<Vector3> GetPortalPositions () {
+        return portalPositions;
     }
 
+    public List<Vector3> GetBasePositions () {
+        return basePositions;
+    }
+
+    public List<Tile> Neighbours (Vector3 mainNode) {
+        List<Tile> neighbours = new List<Tile> ();
+        if (grid.ContainsKey(new Vector3 (mainNode.x, mainNode.y + 1, 0f)))
+            neighbours.Add (grid[new Vector3 (mainNode.x, mainNode.y + 1, 0f)]);
+        if (grid.ContainsKey(new Vector3 (mainNode.x + 1, mainNode.y, 0f)))
+            neighbours.Add (grid[new Vector3 (mainNode.x + 1, mainNode.y, 0f)]);
+        if (grid.ContainsKey (new Vector3 (mainNode.x, mainNode.y - 1, 0f)))
+            neighbours.Add (grid[new Vector3 (mainNode.x, mainNode.y - 1, 0f)]);
+        if (grid.ContainsKey (new Vector3 (mainNode.x - 1, mainNode.y, 0f)))
+            neighbours.Add (grid[new Vector3 (mainNode.x - 1, mainNode.y, 0f)]);
+        return neighbours;
+    }
 }
