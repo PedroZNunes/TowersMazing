@@ -6,8 +6,8 @@ using Random = UnityEngine.Random;
 
 public class TilesManager : MonoBehaviour {
 
-    const int ROWS = 19;
-    const int COLUMNS = 34;
+    private const int ROWS = 19;
+    private const int COLUMNS = 34;
 
     [Serializable]
     public class Count {
@@ -20,6 +20,7 @@ public class TilesManager : MonoBehaviour {
         }
     }
 
+
     [SerializeField]
     private GameObject portalTile;
     [SerializeField]
@@ -28,16 +29,23 @@ public class TilesManager : MonoBehaviour {
     private GameObject floorTile;
     [SerializeField]
     private GameObject wallTile;
-    [SerializeField]
 
+    [SerializeField]
+    private PathFinder pathFinder;
+    [SerializeField]
+    private Count wallCount = new Count (10 , 20);
+
+    [SerializeField]
     private List<Vector3> portalPositions = new List<Vector3> ();
     [SerializeField]
     private List<Vector3> basePositions = new List<Vector3> ();
 
+
     [SerializeField]
     private string holderName = "Board";
-    private Transform tilesHolder;
 
+
+    private Transform tilesHolder;
     private List<Vector3> gridPositions = new List<Vector3> ();
     private Dictionary<Vector3, Tile> grid = new Dictionary<Vector3, Tile> ();
 
@@ -46,10 +54,9 @@ public class TilesManager : MonoBehaviour {
         MapSetup ();
     }
 
-    private void InitizalizeGrid () {
 
+    private void InitizalizeGrid () {
         gridPositions.Clear ();
-        //gridPosition gets only the cells that are not at the edge of the screen
         for (int x = 0 ; x <= COLUMNS ; x++) {
             for (int y = 0 ; y <= ROWS ; y++) {
                 gridPositions.Add (new Vector3 (x, y, 0f));
@@ -57,42 +64,74 @@ public class TilesManager : MonoBehaviour {
         }
     }
 
+
     private void MapSetup () {
         tilesHolder = new GameObject (holderName).transform;
         FillGrid ();
     }
 
+
     private void FillGrid () {
+
         for (int gridIndex = 0 ; gridIndex < gridPositions.Count ; gridIndex++) { //loop through the grid
-            GameObject toInstantiate = floorTile;
+            GameObject tileToInstantiate = floorTile;
 
             if (gridPositions[gridIndex].x == 0 || gridPositions[gridIndex].x == COLUMNS || gridPositions[gridIndex].y == 0 || gridPositions[gridIndex].y == ROWS) {
+
                 if (portalPositions.Contains (gridPositions[gridIndex])) {
-                    toInstantiate = portalTile;
+                    tileToInstantiate = portalTile;
                 }
                 else if (basePositions.Contains (gridPositions[gridIndex])) {
-                    toInstantiate = baseTile;
+                    tileToInstantiate = baseTile;
                 }
                 else {
-                    toInstantiate = wallTile;
+                    tileToInstantiate = wallTile;
                 }
+
             }
 
-            if (toInstantiate == null) {
+            if (tileToInstantiate == null) {
                 Debug.LogError ("FillGrid function has nothing to instantiate.");
                 continue; 
             }
-            
 
+            grid.Add (gridPositions[gridIndex], tileToGrid);
 
-            GameObject instance = Instantiate (toInstantiate, gridPositions[gridIndex], Quaternion.identity, tilesHolder) as GameObject;
-            Tile tileToDictionary = instance.GetComponent<Tile> ();
+        }
 
-            if (tileToDictionary == null) {
-                Debug.LogError ("Tile Component not found.");
+    }
+
+    private void RandomTilePlacement (GameObject tilePrefab, int minCount, int maxCount) {
+        int randomNumber = Random.Range (minCount, maxCount);
+        List<Vector3> usedPositions = new List<Vector3> ();
+        Vector3 tilePos = new Vector3 ();
+
+        for (int i = 0 ; i < randomNumber ; i++) {
+            tilePos.Set (0 , 0 , 0);
+            tilePos.x = Random.Range (1 , COLUMNS);
+            tilePos.y = Random.Range (1 , ROWS);
+
+            if (!usedPositions.Contains (tilePos)) {
+                Tile previousTile = grid[tilePos];
+                grid[tilePos] = tilePrefab.GetComponent<Tile>();
+                pathFinder.FindPaths ();
+
+                try {
+                    for (int j = 0 ; j < portalPositions.Count ; j++) {
+                        pathFinder.CreatePaths (portalPositions[j]);
+                    }
+                }
+                catch {
+                    Debug.LogFormat ("Wall blocked path. wall removed at {0}" , tilePos);
+                    grid[tilePos] = previousTile;
+                    i--;
+                    continue;
+                }
+
+                Destroy (previousTile.instance); //only if it succeeds
+                Instantiate (tilePrefab , tilePos , Quaternion.identity , tilesHolder);
+                usedPositions.Add (tilePos);
             }
-
-            grid.Add (gridPositions[gridIndex], tileToDictionary);
         }
     }
 
