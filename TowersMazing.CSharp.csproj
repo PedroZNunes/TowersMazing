@@ -81,20 +81,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Actor.cs" />
-    <Compile Include="Assets\Components.cs" />
-    <Compile Include="Assets\Creep.cs" />
-    <Compile Include="Assets\PathFinder.cs" />
-    <Compile Include="Assets\Scripts\AI.cs" />
-    <Compile Include="Assets\Scripts\CreepSpawner.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\AI.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Actor.cs" />
     <Compile Include="Assets\Scripts\Gameplay\BaseTile.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Components.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Creep.cs" />
     <Compile Include="Assets\Scripts\Gameplay\FloorTile.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Movement.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\PathFinder.cs" />
     <Compile Include="Assets\Scripts\Gameplay\PortalTile.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\Tile.cs" />
     <Compile Include="Assets\Scripts\Gameplay\WallTile.cs" />
-    <Compile Include="Assets\Scripts\Movement.cs" />
-    <Compile Include="Assets\Scripts\MyTags.cs" />
-    <Compile Include="Assets\Scripts\TilesManager.cs" />
-    <Compile Include="Assets\Tile.cs" />
+    <Compile Include="Assets\Scripts\Management\CreepSpawner.cs" />
+    <Compile Include="Assets\Scripts\Management\MyTags.cs" />
+    <Compile Include="Assets\Scripts\Management\TilesManager.cs" />
+    <Compile Include="Assets\StartButton.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>
