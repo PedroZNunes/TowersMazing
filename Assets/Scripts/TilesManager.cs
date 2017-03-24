@@ -49,7 +49,41 @@ public class TilesManager : MonoBehaviour {
     private List<Vector3> gridPositions = new List<Vector3> ();
     private Dictionary<Vector3, Tile> grid = new Dictionary<Vector3, Tile> ();
 
-    private void Start () {
+    private void OnValidate () {
+        for (int i = 0 ; i < portalPositions.Count ; i++) {
+            Vector3 pos = portalPositions[i];
+            pos.x = Mathf.Clamp (portalPositions[i].x , 0 , COLUMNS);
+
+            if (pos.x == COLUMNS || pos.x == 0) {
+                pos.y = Mathf.Clamp (portalPositions[i].y , 1 , ROWS - 1);
+            }
+            else {
+                pos.y = Mathf.FloorToInt(portalPositions[i].y / ROWS) * ROWS;
+            }
+
+            pos.y = Mathf.Clamp (pos.y , 0 , ROWS);
+            portalPositions[i] = pos;
+        }
+
+        for (int i = 0 ; i < basePositions.Count ; i++) {
+            Vector3 pos = basePositions[i];
+            pos.x = Mathf.Clamp (basePositions[i].x , 0 , COLUMNS);
+
+            if (pos.x == COLUMNS || pos.x == 0) {
+                pos.y = Mathf.Clamp (basePositions[i].y , 1 , ROWS - 1);
+            }
+            else {
+                pos.y = Mathf.FloorToInt (basePositions[i].y / ROWS) * ROWS;
+            }
+
+            pos.y = Mathf.Clamp (pos.y , 0 , ROWS);
+            basePositions[i] = pos;
+        }
+
+    }
+
+
+    private void Awake () {
         InitizalizeGrid ();
         MapSetup ();
     }
@@ -68,6 +102,7 @@ public class TilesManager : MonoBehaviour {
     private void MapSetup () {
         tilesHolder = new GameObject (holderName).transform;
         FillGrid ();
+        RandomTilePlacement (wallTile, wallCount.minimum, wallCount.maximum);
     }
 
 
@@ -95,6 +130,8 @@ public class TilesManager : MonoBehaviour {
                 continue; 
             }
 
+            GameObject instance = Instantiate (tileToInstantiate, gridPositions[gridIndex], Quaternion.identity, tilesHolder) as GameObject;
+            Tile tileToGrid = instance.GetComponent<Tile> ();
             grid.Add (gridPositions[gridIndex], tileToGrid);
 
         }
