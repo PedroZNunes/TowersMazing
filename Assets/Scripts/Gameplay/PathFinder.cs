@@ -15,6 +15,7 @@ public class PathFinder : MonoBehaviour {
     [SerializeField]
     private TilesManager tilesManager;
 
+    private List<Vector3> reachableTiles = new List<Vector3> ();
     private Dictionary<Vector3 , Vector3>[] cameFrom;
     private Queue<Vector3> frontier = new Queue<Vector3> ();
     private List<Vector3> basePositions = new List<Vector3> ();
@@ -53,7 +54,7 @@ public class PathFinder : MonoBehaviour {
 
 
     public void FindPaths () {
-
+        reachableTiles.Clear ();
         if (cameFrom.Length >= 0) {
             for (int i = 0 ; i < cameFrom.Length ; i++) {
                 cameFrom[i] = new Dictionary<Vector3 , Vector3> ();
@@ -70,6 +71,8 @@ public class PathFinder : MonoBehaviour {
 
             while (frontier.Count > 0) {
                 currentPosition = frontier.Dequeue ();
+                if (!reachableTiles.Contains (currentPosition))
+                    reachableTiles.Add (currentPosition);
                 List<Tile> neighbours = tilesManager.Neighbours (currentPosition);
 
                 foreach (Tile tile in neighbours) {
@@ -122,6 +125,11 @@ public class PathFinder : MonoBehaviour {
         }
 
         return paths;
+    }
+
+
+    public List<Vector3> GetPathingGrid () {
+        return reachableTiles;
     }
 
 
