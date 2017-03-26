@@ -159,19 +159,49 @@ public class TilesManager : MonoBehaviour {
                     }
                 }
                 catch {
-                    Debug.LogFormat ("Wall blocked path. wall removed at {0}" , tilePos);
+                    Debug.LogFormat ("{0} blocked path at {1}. {0} removed." , tilePrefab.name , tilePos);
                     grid[tilePos] = previousTile;
                     i--;
                     continue;
                 }
-
-                Destroy (previousTile.instance); //only if it succeeds
-                Instantiate (tilePrefab , tilePos , Quaternion.identity , tilesHolder);
+                SwapTile (previousTile.instance , tilePrefab , tilePos);
                 usedPositions.Add (tilePos);
+
+                //check if blocked a tile completely.
+                Tile[] immediateNeighbours = Neighbours (tilePos).ToArray();
+                for (int j = 0 ; j < immediateNeighbours.Length ; j++) {
+                    if (!immediateNeighbours[j].IsPassable ()) {
+                        continue;
+                    }
+                    Tile[] nextNeighbours = Neighbours ( immediateNeighbours[j].GetPosition() ).ToArray();
+                    int numberOfWalls = 0;
+                    for (int k = 0 ; k < nextNeighbours.Length ; k++) {
+                        if (nextNeighbours[k].IsPassable ()) {
+                            break;
+                        }
+                        else {
+                            numberOfWalls++;
+                        }
+                    }
+                    if (numberOfWalls == 4) {
+                        SwapTile (immediateNeighbours[j].instance , tilePrefab , immediateNeighbours[j].GetPosition ());
+                        usedPositions.Add (immediateNeighbours[j].GetPosition ());
+                        i++;
+                    }
+                }
             }
         }
     }
 
+    private void PlaceTile(GameObject tilePrefab, Vector3 tilePosition) {
+        grid[tilePosition] = tilePrefab.GetComponent<Tile> ();
+        Instantiate (tilePrefab , tilePosition , Quaternion.identity , tilesHolder);
+    }
+
+    private void SwapTile( GameObject tileToDestroy , GameObject tileToPlace , Vector3 tilePosition ) {
+        Destroy (tileToDestroy);
+        PlaceTile (tileToPlace, tilePosition);
+    }
 
     public List<Vector3> GetPortalPositions () {
         return portalPositions;
