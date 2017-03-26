@@ -103,6 +103,7 @@ public class TilesManager : MonoBehaviour {
         tilesHolder = new GameObject (holderName).transform;
         FillGrid ();
         RandomTilePlacement (wallTile, wallCount.minimum, wallCount.maximum);
+        TrackBlockedTiles ();
     }
 
 
@@ -144,10 +145,7 @@ public class TilesManager : MonoBehaviour {
         Vector3 tilePos = new Vector3 ();
 
         for (int i = 0 ; i < randomNumber ; i++) {
-            tilePos.Set (0 , 0 , 0);
-            tilePos.x = Random.Range (1 , COLUMNS);
-            tilePos.y = Random.Range (1 , ROWS);
-
+            tilePos = GenerateRandomTilePosition ();
             if (!usedPositions.Contains (tilePos)) {
                 Tile previousTile = grid[tilePos];
                 grid[tilePos] = tilePrefab.GetComponent<Tile>();
@@ -159,19 +157,56 @@ public class TilesManager : MonoBehaviour {
                     }
                 }
                 catch {
-                    Debug.LogFormat ("Wall blocked path. wall removed at {0}" , tilePos);
+                    Debug.LogFormat ("{0} blocked path at {1}. {0} removed." , tilePrefab.name , tilePos);
                     grid[tilePos] = previousTile;
                     i--;
                     continue;
                 }
-
-                Destroy (previousTile.instance); //only if it succeeds
-                Instantiate (tilePrefab , tilePos , Quaternion.identity , tilesHolder);
+                SwapTile (previousTile.instance , tilePrefab , tilePos);
                 usedPositions.Add (tilePos);
+
+                //check if blocked a tile completely.
+                //Tile[] immediateNeighbours = Neighbours (tilePos).ToArray();
+                //for (int j = 0 ; j < immediateNeighbours.Length ; j++) {
+                //    if (!immediateNeighbours[j].IsPassable ()) {
+                //        continue;
+                //    }
+                //    Tile[] nextNeighbours = Neighbours ( immediateNeighbours[j].GetPosition() ).ToArray();
+                //    int numberOfWalls = 0;
+                //    for (int k = 0 ; k < nextNeighbours.Length ; k++) {
+                //        if (nextNeighbours[k].IsPassable ()) {
+                //            break;
+                //        }
+                //        else {
+                //            numberOfWalls++;
+                //        }
+                //    }
+                //    if (numberOfWalls == 4) {
+                //        SwapTile (immediateNeighbours[j].instance , tilePrefab , immediateNeighbours[j].GetPosition ());
+                //        usedPositions.Add (immediateNeighbours[j].GetPosition ());
+                //        i++;
+                //    }
+                //}
             }
         }
     }
 
+    private Vector3 GenerateRandomTilePosition () {
+        Vector3 tilePos = new Vector3 ();
+        tilePos.x = Random.Range (1 , COLUMNS);
+        tilePos.y = Random.Range (1 , ROWS);
+        return tilePos;
+    }
+
+    private void PlaceTile(GameObject tileToPlace , Vector3 tilePosition) {
+        grid[tilePosition] = tileToPlace.GetComponent<Tile> ();
+        Instantiate (tileToPlace , tilePosition , Quaternion.identity , tilesHolder);
+    }
+
+    private void SwapTile( GameObject tileToDestroy , GameObject tileToPlace , Vector3 tilePosition ) {
+        Destroy (tileToDestroy);
+        PlaceTile (tileToPlace, tilePosition);
+    }
 
     public List<Vector3> GetPortalPositions () {
         return portalPositions;
@@ -193,4 +228,17 @@ public class TilesManager : MonoBehaviour {
             neighbours.Add (grid[new Vector3 (mainNode.x - 1, mainNode.y, 0f)]);
         return neighbours;
     }
+
+    private void TrackBlockedTiles () {
+        List<Vector3> reachableTiles = pathFinder.GetPathingGrid ();
+        for (int i = 0 ; i < gridPositions.Count ; i++) {
+            if (reachableTiles.Contains(gridPositions[i])) {
+                continue;
+            }
+            else {
+                SwapTile ( grid[gridPositions[i]].instance, wallTile , gridPositions[i]);
+            }
+        }
+    }
+
 }
