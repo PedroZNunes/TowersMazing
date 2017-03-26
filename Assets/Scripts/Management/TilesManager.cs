@@ -164,29 +164,6 @@ public class TilesManager : MonoBehaviour {
                 }
                 SwapTile (previousTile.instance , tilePrefab , tilePos);
                 usedPositions.Add (tilePos);
-
-                //check if blocked a tile completely.
-                //Tile[] immediateNeighbours = Neighbours (tilePos).ToArray();
-                //for (int j = 0 ; j < immediateNeighbours.Length ; j++) {
-                //    if (!immediateNeighbours[j].IsPassable ()) {
-                //        continue;
-                //    }
-                //    Tile[] nextNeighbours = Neighbours ( immediateNeighbours[j].GetPosition() ).ToArray();
-                //    int numberOfWalls = 0;
-                //    for (int k = 0 ; k < nextNeighbours.Length ; k++) {
-                //        if (nextNeighbours[k].IsPassable ()) {
-                //            break;
-                //        }
-                //        else {
-                //            numberOfWalls++;
-                //        }
-                //    }
-                //    if (numberOfWalls == 4) {
-                //        SwapTile (immediateNeighbours[j].instance , tilePrefab , immediateNeighbours[j].GetPosition ());
-                //        usedPositions.Add (immediateNeighbours[j].GetPosition ());
-                //        i++;
-                //    }
-                //}
             }
         }
     }
@@ -218,14 +195,14 @@ public class TilesManager : MonoBehaviour {
 
     public List<Tile> Neighbours (Vector3 mainNode) {
         List<Tile> neighbours = new List<Tile> ();
-        if (grid.ContainsKey(new Vector3 (mainNode.x, mainNode.y + 1, 0f)))
-            neighbours.Add (grid[new Vector3 (mainNode.x, mainNode.y + 1, 0f)]);
-        if (grid.ContainsKey(new Vector3 (mainNode.x + 1, mainNode.y, 0f)))
-            neighbours.Add (grid[new Vector3 (mainNode.x + 1, mainNode.y, 0f)]);
-        if (grid.ContainsKey (new Vector3 (mainNode.x, mainNode.y - 1, 0f)))
-            neighbours.Add (grid[new Vector3 (mainNode.x, mainNode.y - 1, 0f)]);
-        if (grid.ContainsKey (new Vector3 (mainNode.x - 1, mainNode.y, 0f)))
-            neighbours.Add (grid[new Vector3 (mainNode.x - 1, mainNode.y, 0f)]);
+        if (grid.ContainsKey(mainNode + Vector3.up))
+            neighbours.Add (grid[mainNode + Vector3.up]);
+        if (grid.ContainsKey(mainNode + Vector3.right))
+            neighbours.Add (grid[mainNode + Vector3.right]);
+        if (grid.ContainsKey (mainNode + Vector3.down))
+            neighbours.Add (grid[mainNode + Vector3.down]);
+        if (grid.ContainsKey (mainNode + Vector3.left))
+            neighbours.Add (grid[mainNode + Vector3.left]);
         return neighbours;
     }
 
