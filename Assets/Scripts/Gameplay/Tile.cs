@@ -14,7 +14,10 @@ public class Tile : MonoBehaviour {
     protected bool isBuildable;
     [SerializeField]
     protected GameObject prefab;
-    
+    [SerializeField]
+    protected int movementCost = 1;
+
+
     protected Vector3 position;
     
 
@@ -38,6 +41,10 @@ public class Tile : MonoBehaviour {
 
     public Vector3 GetPosition () {
         return position;
+    }
+
+    public void SetMovementCost (float movementCostModifier) {
+        movementCost = Mathf.FloorToInt (movementCostModifier * movementCost);
     }
 
 }
