@@ -26,4 +26,8 @@ public class Movement : MonoBehaviour {
         speedMod = speedModifier;
     }
 
+    public float GetCurrentSpeed () {
+        return baseSpeed * speedMod;
+    }
+
 }
