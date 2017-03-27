@@ -31,6 +31,14 @@ public class Creep : Actor {
         path = pathFinder.CalculatePath (transform.position);
         StartCoroutine (movement.MoveAlongPath (path));
     }
+
+    public float HealthPercent () {
+        return (health.current / health.max) * 100;
+    }
+
+    public float GetCurrentSpeed () {
+        return movement.GetCurrentSpeed ();
+    }
 }
 
 
