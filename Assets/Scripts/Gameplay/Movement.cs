@@ -22,4 +22,8 @@ public class Movement : MonoBehaviour {
         }
     }
 
+    public void SetSpeedModifier(float speedModifier ) {
+        speedMod = speedModifier;
+    }
+
 }

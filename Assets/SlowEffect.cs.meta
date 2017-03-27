@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 542e483bdadb24d4c9f2424c2be29607
+timeCreated: 1490574731
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - slowCreepPrefab: {fileID: 1283644043596644, guid: 97fcd8c858825924ebf523ad3174c006,
+      type: 2}
+  - slowTilePrefab: {fileID: 1283644043596644, guid: 4e6a2551351ee1142820de42388e3ddc,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
